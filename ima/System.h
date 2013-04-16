@@ -18,6 +18,7 @@ public:
 	void Initialize();
 	void Shutdown();
 	void Run();
+	Real* MeanShift(Estimator estimator, Real* x, Real precision, unsigned long maxIter, const int length);
 };
 
 #endif

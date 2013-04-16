@@ -98,4 +98,14 @@ void Image::Save(const char* name) {
 
 void Image::FillSpatialAndComponants(Real** buffer, unsigned long index) const {
 	*buffer = (Real*)malloc(sizeof(Real)*(2+bytesPerPixel));
+	Real x, y;
+	x = index % w;
+	y = index / w;
+	*buffer[0] = x;
+	*buffer[1] = y;
+	int i = 0;
+	while (i<bytesPerPixel) {
+		*buffer[2+i] = componants[indices[index]*3+i];
+		i++;
+	}
 }
