@@ -7,7 +7,7 @@
 class EstimatorKernel {
 private:
 public:
-	virtual Real Compute(const TVector3<Real>&) const = 0;
+	virtual Real Compute(Real*, int) const = 0;
 };
 
 #endif

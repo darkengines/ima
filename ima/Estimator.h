@@ -16,7 +16,7 @@ public:
 	Estimator(const Image&, const EstimatorKernel&, const Real&, const Real&);
 	Estimator(const Estimator&);
 	~Estimator();
-	Real Compute(const TVector3<Real>&) const;
+	void Compute(Real* input, Real* output, int length) const;
 private:
 };
 

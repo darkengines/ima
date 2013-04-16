@@ -96,6 +96,6 @@ void Image::Save(const char* name) {
 	SDL_FreeSurface(surface);
 }
 
-TVector3<Real> Image::GetPixelAsVector3(unsigned long index) const {
-	return TVector3<Real>(componants+indices[index*3]);
+void Image::FillSpatialAndComponants(Real** buffer, unsigned long index) const {
+	*buffer = (Real*)malloc(sizeof(Real)*(2+bytesPerPixel));
 }

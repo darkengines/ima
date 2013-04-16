@@ -6,18 +6,47 @@ Estimator::Estimator(const Estimator& src): _image(src._image), _kernel(src._ker
 }
 Estimator::~Estimator() {
 }
-TVector3<Real>& Estimator::Compute(const TVector3<Real>& vector) const {
-	TVector3<Real> sum1;
-	Real g, sum2;
-	g = sum2 = 0;
-	sum1.SetAll(0);
-	int i = 0;
+void Estimator::Compute(Real* input, Real* output, int length) const {
+	Real* xi;
+	Real* sum1 = (Real*)malloc(sizeof(Real)*length);
+	Real* temp = (Real*)malloc(sizeof(Real)*length);
+	Real g, g1, g2, sum2;
+	g = g1 = g2 = sum2 = 0;
+
+	int i, j;
+	i=j=0;
+	while (i<length) {
+		sum1[i] = 0;
+		i++;
+	}
 	while (i < _image.length) {
-		TVector3<Real> xi = _image.GetPixelAsVector3(i);
-		g = _kernel.Compute(vector - xi);
-		sum1 += xi*g;
+		_image.FillSpatialAndComponants(&xi, i);
+		
+		j = 0;
+		while (j<length) {
+			temp[j] = input[j] - xi[j];
+			j++;
+		}
+
+		g1 = _kernel.Compute(temp, 2);
+		g2 = _kernel.Compute(temp+2, length-2);
+		g = g1*g2;
+
+		j = 0;
+		while (j<length) {
+			sum1[j] += xi[j] * g;
+			j++;
+		}
+
 		sum2 += g;
 		i++;
 	}
-	return (sum1/sum2)-vector;
+	j = 0;
+	while (j<length) {
+		output[j] += sum1[j] / sum2;
+		j++;
+	}
+	free(temp);
+	free(sum1);
+	free(xi);
 }

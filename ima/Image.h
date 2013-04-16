@@ -24,7 +24,7 @@ public:
 	Real* componants;
 	Uint8 bytesPerPixel;
 	void Save(const char*);
-	TVector3<Real> GetPixelAsVector3(unsigned long index) const;
+	void FillSpatialAndComponants(Real** buffer, unsigned long) const;
 private:
 };
 

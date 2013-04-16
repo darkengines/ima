@@ -21,15 +21,6 @@ void System::Shutdown() {
 	SDL_Quit();
 }
 void System::Run() {
-	Image image("test.jpg");
+	Image image("campus.jpg");
 	image.Save("caca.bmp");
-	FlatEstimatorKernel kernel;
-	Estimator estimator(image, kernel, 1, 1);
-	TVector3<Real> v;
-	v[0] = 0.5;
-	v[1] = 0.5;
-	v[2] = 0.5;
-	Real result = estimator.Compute(v);
-	printf("%f\n", result);
-	getchar();
 }

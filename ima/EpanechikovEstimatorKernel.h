@@ -10,7 +10,7 @@ public:
 	EpanechikovEstimatorKernel(const Real& tolerance);
 	EpanechikovEstimatorKernel(const EpanechikovEstimatorKernel&);
 	~EpanechikovEstimatorKernel();
-	Real Compute(const TVector3<Real>&) const;
+	Real Compute(Real*,int) const;
 };
 
 #endif

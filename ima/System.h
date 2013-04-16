@@ -6,7 +6,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include "Image.h"
-#include "FlatEstimatorKernel.h"
+#include "EpanechikovEstimatorKernel.h"
 #include "Estimator.h"
 
 class System {
