@@ -138,3 +138,20 @@ void Image::MeanShift(Real* dest, unsigned long index, MeanShiftKernel& kernel, 
 	free(y);
 	free(temp);
 }
+void Image::FixNoise(MeanShiftKernel& kernel, Real spatialTolerance, Real colorTolerance, Real accuracy, unsigned long maxPasses) {
+	Image image(*this);
+	Real* temp = (Real*)malloc(sizeof(Real)*bytesPerPixel);
+	unsigned long i = length;
+	while (i--) {
+		image.MeanShift(temp, i, kernel, spatialTolerance, colorTolerance, accuracy, maxPasses);
+		setPixel(temp+2, i);
+		printf("%d/%d\n", length-i, length);
+	}
+}
+void Image::setPixel(Real* pixel, unsigned long index) {
+	index = index * bytesPerPixel;
+	int i = bytesPerPixel;
+	while (i--) {
+		buffer[index+i] = pixel[i];
+	}
+}
