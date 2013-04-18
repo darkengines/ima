@@ -16,7 +16,7 @@ void Estimator::Compute(Real* input, Real* output, int length) const {
 	int i, j;
 	i=j=0;
 	while (i<length) {
-		sum1[i] = 0;
+		sum1[i] = 0.0f;
 		i++;
 	}
 	while (i < _image.length) {
@@ -39,14 +39,14 @@ void Estimator::Compute(Real* input, Real* output, int length) const {
 		}
 
 		sum2 += g;
+		free(xi);
 		i++;
 	}
 	j = 0;
 	while (j<length) {
-		output[j] += sum1[j] / sum2;
+		output[j] = sum1[j] / sum2;
 		j++;
 	}
 	free(temp);
 	free(sum1);
-	free(xi);
 }

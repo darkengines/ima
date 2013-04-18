@@ -20,11 +20,9 @@ public:
 	unsigned long h;
 	unsigned long length;
 	unsigned long size;
-	unsigned long* indices;
-	Real* componants;
-	Uint8 bytesPerPixel;
+	Real* buffer;
+	int bytesPerPixel;
 	void Save(const char*);
-	void FillSpatialAndComponants(Real** buffer, unsigned long) const;
 private:
 };
 

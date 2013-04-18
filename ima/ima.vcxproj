@@ -122,17 +122,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Estimator.cpp" />
-    <ClCompile Include="EpanechikovEstimatorKernel.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="System.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Btree.h" />
-    <ClInclude Include="Estimator.h" />
-    <ClInclude Include="EstimatorKernel.h" />
-    <ClInclude Include="EpanechikovEstimatorKernel.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="Precision.h" />
     <ClInclude Include="System.h" />

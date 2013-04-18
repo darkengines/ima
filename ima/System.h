@@ -6,8 +6,6 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include "Image.h"
-#include "EpanechikovEstimatorKernel.h"
-#include "Estimator.h"
 
 class System {
 private:
@@ -18,7 +16,7 @@ public:
 	void Initialize();
 	void Shutdown();
 	void Run();
-	Real* MeanShift(Estimator estimator, Real* x, Real precision, unsigned long maxIter, const int length);
+	Image& Debruit(Image&);
 };
 
 #endif
