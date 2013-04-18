@@ -29,6 +29,7 @@ public:
 	void MeanShift(Real* dest, unsigned long index, MeanShiftKernel& kernel, Real spatialTolerance, Real colorTolerance, Real accuracy, unsigned long maxPasses);
 	void FixNoise(MeanShiftKernel& kernel, Real spatialTolerance, Real colorTolerance, Real accuracy, unsigned long maxPasses);
 	void setPixel(Real* pixel, unsigned long index);
+	SDL_Surface* GetSurface();
 private:
 	void meanShiftProcess(Real* dest, unsigned long index, MeanShiftKernel& kernel, Real spatialTolerance, Real colorTolerance);
 };

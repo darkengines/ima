@@ -103,7 +103,7 @@ void Image::meanShiftProcess(Real* dest, unsigned long index, MeanShiftKernel& k
 	GetXyrgb(x, index);
 	int i = length;
 	while (i--) {
-		GetXyrgb(xi, index);
+		GetXyrgb(xi, i);
 		sub(x, xi, temp, size);
 		sg = kernel.Compute(temp, 2, spatialTolerance);
 		cg = kernel.Compute(temp+2, bytesPerPixel, colorTolerance);
@@ -142,9 +142,20 @@ void Image::FixNoise(MeanShiftKernel& kernel, Real spatialTolerance, Real colorT
 	Image image(*this);
 	Real* temp = (Real*)malloc(sizeof(Real)*bytesPerPixel);
 	unsigned long i = length;
+	SDL_Surface *screen;
+ 
+	screen = SDL_SetVideoMode(w, h, 24, SDL_DOUBLEBUF);
+	if (screen == NULL) {
+		printf("Unable to set video mode: %s\n", SDL_GetError());
+	}
+	SDL_Surface* surface;
 	while (i--) {
 		image.MeanShift(temp, i, kernel, spatialTolerance, colorTolerance, accuracy, maxPasses);
 		setPixel(temp+2, i);
+		surface = GetSurface();
+		SDL_BlitSurface(surface, 0, screen, 0);
+		SDL_Flip(screen);
+		SDL_FreeSurface(surface);
 		printf("%d/%d\n", length-i, length);
 	}
 }
@@ -154,4 +165,16 @@ void Image::setPixel(Real* pixel, unsigned long index) {
 	while (i--) {
 		buffer[index+i] = pixel[i];
 	}
+}
+SDL_Surface* Image::GetSurface() {
+	SDL_Surface* surface = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 24, 0, 0, 0, 0);
+	unsigned long i = size;
+	SDL_LockSurface(surface);
+	unsigned char* pixels = (unsigned char*)surface->pixels;
+	Real factor = pow(2.0, 8);
+	while (i--) {
+		pixels[i] = buffer[i]*factor;
+	}
+	SDL_UnlockSurface(surface);
+	return surface;
 }
