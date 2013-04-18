@@ -6,6 +6,8 @@
 #include "TVector3.h"
 #include "THashTable.h"
 #include "Btree.h"
+#include "MeanShiftKernel.h"
+#include "Core.h"
 
 typedef SDL_PixelFormat PixelFormat;
 
@@ -23,7 +25,10 @@ public:
 	Real* buffer;
 	int bytesPerPixel;
 	void Save(const char*);
+	void GetXyrgb(Real* dest, unsigned long index);
+	void MeanShift(Real* dest, unsigned long index, MeanShiftKernel& kernel, Real spatialTolerance, Real colorTolerance, Real accuracy, unsigned long maxPasses);
 private:
+	void meanShiftProcess(Real* dest, unsigned long index, MeanShiftKernel& kernel, Real spatialTolerance, Real colorTolerance);
 };
 
 #endif

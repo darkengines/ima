@@ -21,7 +21,11 @@ void System::Shutdown() {
 	SDL_Quit();
 }
 void System::Run() {
-	
 	Image image("lol.jpg");
+	EpanechikovMeanShiftKernel ker;
+	Real* result = (Real*)malloc(sizeof(Real)*5);
+	image.MeanShift(result, 1, ker, 1, 1, 0.1, 5000);
+	printf("x=%f y=%f r=%f g=%f b=%f\n", result[0], result[1], result[2], result[3], result[4]);
 	image.Save("caca.bmp");
+	getchar();
 }

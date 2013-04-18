@@ -6,6 +6,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include "Image.h"
+#include "EpanechikovMeanShiftKernel.h"
 
 class System {
 private:
@@ -16,7 +17,6 @@ public:
 	void Initialize();
 	void Shutdown();
 	void Run();
-	Image& Debruit(Image&);
 };
 
 #endif
