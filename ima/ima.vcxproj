@@ -134,11 +134,13 @@
     <ClInclude Include="Core.h" />
     <ClInclude Include="EpanechikovMeanShiftKernel.h" />
     <ClInclude Include="GaussianMeanshiftKernel.h" />
+    <ClInclude Include="Hashable.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="MeanShiftKernel.h" />
     <ClInclude Include="Precision.h" />
     <ClInclude Include="System.h" />
     <ClInclude Include="THashTable.h" />
+    <ClInclude Include="TVector.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -5,9 +5,14 @@
 #include <stdlib.h>
 #include <math.h>
 #include "Core.h"
+#include "THashTable.h"
+#include "TVector.h"
 
 class GaussianMeanShiftKernel: public MeanShiftKernel {
+	
 public:
+	THashTable<TVector<Real>, Real>* cache;
+	GaussianMeanShiftKernel();
 	Real Compute(Real*,int, Real) const;
 };
 

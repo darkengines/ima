@@ -22,9 +22,9 @@ void System::Shutdown() {
 }
 void System::Run() {
 	Image image("lena_bruite_s0.1.jpg");
-	GaussianMeanShiftKernel ker;
-	Real* result = (Real*)malloc(sizeof(Real)*5);
-	image.FixNoise(ker, 0.015, 0.3, 0.00001, 50000000);
+	GaussianMeanShiftKernel gker;
+	EpanechikovMeanShiftKernel eker;
+	image.FixNoise(eker, gker, 0.05, 0.08, 0.01, 0);
 	image.Save("caca.bmp");
 	getchar();
 }

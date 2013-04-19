@@ -176,7 +176,7 @@ public:
 
 private:
 	int DefaultHashFunction(const TKEY& key) const {
-		return key % size;
+		return abs(((TVector<Real>&)key).Hash() % size);
 	}
 	int Hash(const TKEY& rtKey) const {
 		if (UserHashFunction) {
