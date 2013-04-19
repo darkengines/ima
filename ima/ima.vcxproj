@@ -124,6 +124,7 @@
   <ItemGroup>
     <ClCompile Include="core.cpp" />
     <ClCompile Include="EpanechikovMeanShiftKernel.cpp" />
+    <ClCompile Include="GaussianMeanShiftKernel.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="System.cpp" />
@@ -132,6 +133,7 @@
     <ClInclude Include="Btree.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="EpanechikovMeanShiftKernel.h" />
+    <ClInclude Include="GaussianMeanshiftKernel.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="MeanShiftKernel.h" />
     <ClInclude Include="Precision.h" />

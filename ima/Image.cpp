@@ -27,7 +27,7 @@ Image::Image(const char* src) {
 		length =w * h;
 		size = length * bytesPerPixel;
 		buffer = (Real*)malloc(sizeof(Real)*size);
-		Real factor = pow(2.0, 8);
+		Real factor = pow(2.0, 8)-1;
 		if (bytesPerPixel == 3) {
 			unsigned long i = length;
 			rgb pixel;
@@ -68,7 +68,7 @@ void Image::Save(const char* name) {
 	unsigned long i = size;
 	SDL_LockSurface(surface);
 	unsigned char* pixels = (unsigned char*)surface->pixels;
-	Real factor = pow(2.0, 8);
+	Real factor = pow(2.0, 8)-1;
 	while (i--) {
 		pixels[i] = buffer[i]*factor;
 	}
@@ -77,9 +77,10 @@ void Image::Save(const char* name) {
 	SDL_FreeSurface(surface);
 }
 void Image::GetXyrgb(Real* dest, unsigned long index) {
+	unsigned long n = index+1;
+	dest[0] = (w - n % w)/(Real)w;
+	dest[1] = (n / w)/(Real)h;
 	index = index * bytesPerPixel;
-	dest[0] = index % w;
-	dest[1] = index / w;
 	int i = bytesPerPixel;
 	while (i--) {
 		dest[i+2] = buffer[index+i];
@@ -105,9 +106,9 @@ void Image::meanShiftProcess(Real* dest, unsigned long index, MeanShiftKernel& k
 	while (i--) {
 		GetXyrgb(xi, i);
 		sub(x, xi, temp, size);
-		sg = kernel.Compute(temp, 2, spatialTolerance);
-		cg = kernel.Compute(temp+2, bytesPerPixel, colorTolerance);
-		g = sg*cg;
+		sg = kernel.Compute(temp, 2, spatialTolerance); //Optimize with cache
+		cg = kernel.Compute(temp+2, bytesPerPixel, colorTolerance); //Optimize with cache
+		g = -sg*cg;
 		addScaled(vsum, xi, vsum, g, size);
 		ssum += g;
 	}
@@ -171,7 +172,7 @@ SDL_Surface* Image::GetSurface() {
 	unsigned long i = size;
 	SDL_LockSurface(surface);
 	unsigned char* pixels = (unsigned char*)surface->pixels;
-	Real factor = pow(2.0, 8);
+	Real factor = pow(2.0, 8)-1;
 	while (i--) {
 		pixels[i] = buffer[i]*factor;
 	}

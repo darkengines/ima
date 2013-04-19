@@ -7,6 +7,7 @@
 #include <SDL_image.h>
 #include "Image.h"
 #include "EpanechikovMeanShiftKernel.h"
+#include "GaussianMeanshiftKernel.h"
 
 class System {
 private:
