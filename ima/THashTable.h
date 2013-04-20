@@ -131,7 +131,21 @@ public:
 			return found ? item->GetValue() : 0;
 		}
 	}
-
+	const int Contains(const TKEY& rtKey) const {
+		THashItem<TKEY, TVALUE>* item = 0;
+		int key = Hash(rtKey);
+		item = hashItems[key];
+		if (!item) {
+			return 0;
+		} else {
+			bool found = item->GetKey() == rtKey;
+			while (!found && item->GetNext()) {
+				item = item->GetNext();
+				found = item->GetKey() == rtKey;
+			}
+			return found ? 1 : 0;
+		}
+	}
 	const TVALUE GetFirst(TKEY* ptKey) {
 		itemIndex = 0;
 		listIndex = 0;

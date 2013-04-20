@@ -5,6 +5,7 @@
 #include <math.h>
 #include "Precision.h"
 #include "Hashable.h"
+#include <math.h>
 
 template<class Real>
 class TVector: public Hashable {
@@ -177,7 +178,7 @@ public:
 		return result;
 	}
 	virtual Real Magnitude() {
-		return sqrt(SquaredMagnitude());
+		return sqrt((float)SquaredMagnitude());
 	}
 	virtual void Normalize() {
 		Real magnitude = Magnitude();
@@ -230,5 +231,5 @@ public:
 		return result;
 	}
 };
-const int TVector<Real>::_primes[3] = {73856093,19349663,83492791};
+const int TVector<unsigned char>::_primes[3] = {73856093,19349663,83492791};
 #endif
