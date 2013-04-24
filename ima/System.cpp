@@ -21,10 +21,10 @@ void System::Shutdown() {
 	SDL_Quit();
 }
 void System::Run() {
-	Image image("lena_bruite_s0.1.jpg");
+	Image image("baboon.jpg");
 	GaussianMeanShiftKernel gker(3, 256);
 	GaussianMeanShiftKernel eker(2, 256);
-	image.FixNoise(eker, gker, 0.01, 0.2, 0.001, 500010);
+	image.FixNoise(eker, gker, 0.1, 0.4, 0.1, 10);
 	image.Save("caca.bmp");
 	getchar();
 }
