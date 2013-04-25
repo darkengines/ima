@@ -39,7 +39,6 @@ MeanShiftKernel::MeanShiftKernel(int mode, int cacheSize) {
 		}
 }
 Real MeanShiftKernel::Compute(Real* componants, int length, Real tolerance) {
-	Real value;
 	bool found = 0;
 	cachedValue* c;
 	int index;

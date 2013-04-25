@@ -21,10 +21,17 @@ void System::Shutdown() {
 	SDL_Quit();
 }
 void System::Run() {
-	Image image("baboon.jpg");
+	Image image("lake.jpg");
 	GaussianMeanShiftKernel gker(3, 256);
 	GaussianMeanShiftKernel eker(2, 256);
-	image.FixNoise(eker, gker, 0.1, 0.4, 0.1, 10);
-	image.Save("caca.bmp");
+	//image.FixNoise(eker, gker, 0.015, 0.3, 0.001, 10);
+	SDL_Surface *screen;
+ 
+	screen = SDL_SetVideoMode(image.w, image.h, 24, SDL_DOUBLEBUF);
+	if (screen == NULL) {
+		printf("Unable to set video mode: %s\n", SDL_GetError());
+	}
+	Image segmented = image.Segment(eker, gker, 0.03125, 0.1936, 0.01, 10, screen);
+	segmented.Save("caca.bmp");
 	getchar();
 }

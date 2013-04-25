@@ -135,30 +135,28 @@ void Image::MeanShift(Real* dest, Real* src, MeanShiftKernel& skernel, MeanShift
 	} while (m > accuracy && (!maxPasses || k < maxPasses)  );
 	memcpy(dest, x, sizeof(Real)*bytesPerPixel);
 }
-void Image::FixNoise(MeanShiftKernel& skernel, MeanShiftKernel& ckernel,Real spatialTolerance, Real colorTolerance, Real accuracy, unsigned long maxPasses) {
+Image& Image::FixNoise(MeanShiftKernel& skernel, MeanShiftKernel& ckernel,Real spatialTolerance, Real colorTolerance, Real accuracy, unsigned long maxPasses, SDL_Surface* screen) {
 	int size = bytesPerPixel;
-	Image image(*this);
+	Image& image(*this);
 	Real* temp = (Real*)malloc(sizeof(Real)*bytesPerPixel);
 	Real* tmpBuffer = (Real*)malloc(sizeof(Real)*bytesPerPixel*3);
 	unsigned long i = length;
-	SDL_Surface *screen;
- 
-	screen = SDL_SetVideoMode(w, h, 24, SDL_DOUBLEBUF);
-	if (screen == NULL) {
-		printf("Unable to set video mode: %s\n", SDL_GetError());
-	}
 	unsigned char* screenS = (unsigned char*)screen->pixels;
 	SDL_Surface* surface;
+	
 	while (i--) {
 		int index = i*bytesPerPixel;
+		
 		screenS[i*3] = 0;
 		screenS[i*3+1] = 255;
 		screenS[i*3+2] = 0;
 		
 		SDL_Flip(screen);
-		image.MeanShift(temp, image.buffer+index, skernel, ckernel, spatialTolerance, colorTolerance, accuracy, maxPasses, tmpBuffer);
-		memcpy(buffer+index+2, temp+2, (bytesPerPixel-2)*sizeof(Real));
-		surface = GetSurface();
+
+		MeanShift(temp, buffer+index, skernel, ckernel, spatialTolerance, colorTolerance, accuracy, maxPasses, tmpBuffer);
+		memcpy(image.buffer+index, temp, (bytesPerPixel)*sizeof(Real));
+		
+		surface = image.GetSurface();
 		SDL_BlitSurface(surface, 0, screen, 0);
 		SDL_Flip(screen);
 		SDL_FreeSurface(surface);
@@ -166,6 +164,7 @@ void Image::FixNoise(MeanShiftKernel& skernel, MeanShiftKernel& ckernel,Real spa
 	}
 	free(temp);
 	free(tmpBuffer);
+	return image;
 }
 void Image::setPixel(Real* pixel, unsigned long index) {
 	index = index * bytesPerPixel;
@@ -190,4 +189,80 @@ SDL_Surface* Image::GetSurface() {
 	SDL_UnlockSurface(surface);
 
 	return surface;
+}
+
+Image& Image::Segment(MeanShiftKernel& skernel, MeanShiftKernel& ckernel,Real spatialTolerance, Real colorTolerance, Real accuracy, unsigned long maxPasses, SDL_Surface* screen) {
+	Image noiseFix = *this;//FixNoise(skernel, ckernel, spatialTolerance, colorTolerance, accuracy, maxPasses, screen);
+	Image& S(*this);
+	GHashTable* hash = g_hash_table_new(g_str_hash, g_str_equal);
+	Real squaredSpatialTolerance = spatialTolerance*spatialTolerance;
+	Real squaredcolorTolerance = colorTolerance*colorTolerance;
+	Real *temp = new Real[5];
+	long index = noiseFix.length;
+	long pixelIndex;
+	long *sum = 0;
+	unsigned char rgb[4];
+	rgb[3] = '\0';
+	unsigned char* cpy;
+	long index2;
+	long pixelIndex2;
+	long *hp,*hq;
+
+	hp = (long*)malloc(sizeof(long));
+	hq = (long*)malloc(sizeof(long));
+
+	//Compute histogram
+	while (index--) {
+		pixelIndex = index*bytesPerPixel+2;
+		rgb[0] = floor(noiseFix.buffer[pixelIndex]*255.0);
+		rgb[1] = floor(noiseFix.buffer[pixelIndex+1]*255.0);
+		rgb[2] = floor(noiseFix.buffer[pixelIndex+2]*255.0);
+		if (!g_hash_table_lookup_extended(hash, rgb, (gpointer*)&cpy, (gpointer*)&sum)) {
+			sum = (long*)malloc(sizeof(long));
+			*sum = 1;
+		} else {
+			(*sum)++;
+		}
+		g_hash_table_insert(hash, rgb, sum);
+	}
+
+	unsigned char* screenS = (unsigned char*)screen->pixels;
+	SDL_Surface* surface;
+
+	index =   length;
+	while (index--) {
+		screenS[index*3] = 0;
+		screenS[index*3+1] = 255;
+		screenS[index*3+2] = 0;
+		
+		SDL_Flip(screen);
+		pixelIndex = index*bytesPerPixel;
+		index2 = length;
+		while (index2--) {
+			pixelIndex2 = index2*bytesPerPixel;
+			sub(noiseFix.buffer+pixelIndex, noiseFix.buffer+pixelIndex2, temp, bytesPerPixel);
+			if (squaredMagnitude(temp, 2) < squaredSpatialTolerance && squaredMagnitude(temp+2, bytesPerPixel-2) < squaredcolorTolerance) {
+				rgb[0] = floor(noiseFix.buffer[pixelIndex+2]*255.0);
+				rgb[1] = floor(noiseFix.buffer[pixelIndex+3]*255.0);
+				rgb[2] = floor(noiseFix.buffer[pixelIndex+4]*255.0);
+
+				bool t = g_hash_table_lookup_extended(hash, rgb, (gpointer*)&cpy, (gpointer*)&hp);
+
+				rgb[0] = floor(noiseFix.buffer[pixelIndex2+2]*255.0);
+				rgb[1] = floor(noiseFix.buffer[pixelIndex2+3]*255.0);
+				rgb[2] = floor(noiseFix.buffer[pixelIndex2+4]*255.0);
+
+				g_hash_table_lookup_extended(hash, rgb, (gpointer*)&cpy, (gpointer*)&hq);
+
+				memcpy(S.buffer+pixelIndex+2, *hp > *hq ? noiseFix.buffer+pixelIndex+2 : noiseFix.buffer+pixelIndex2+2, sizeof(Real)*(bytesPerPixel-2));
+			}
+		}
+		surface = S.GetSurface();
+		SDL_BlitSurface(surface, 0, screen, 0);
+		SDL_Flip(screen);
+		SDL_FreeSurface(surface);
+	}
+	free(temp);
+	g_hash_table_destroy(hash);
+	return S;
 }
