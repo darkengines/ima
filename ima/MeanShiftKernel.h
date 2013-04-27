@@ -19,9 +19,10 @@ private:
 	int cacheSize;
 	int mode;
 public:
-	MeanShiftKernel(int mode, int cacheSize);
+	MeanShiftKernel();
 	virtual Real Compute(Real*, int, Real);
 	virtual Real _compute(Real*, int, Real) const = 0;
+	virtual Real getFrameSize(Real tolerance) = 0;
 };
 
 #endif

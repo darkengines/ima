@@ -21,9 +21,9 @@ void System::Shutdown() {
 	SDL_Quit();
 }
 void System::Run() {
-	Image image("lake.jpg");
-	GaussianMeanShiftKernel gker(3, 256);
-	GaussianMeanShiftKernel eker(2, 256);
+	Image image("lena_bruite_s0.1.jpg");
+	GaussianMeanShiftKernel gker;
+	GaussianMeanShiftKernel eker;
 	//image.FixNoise(eker, gker, 0.015, 0.3, 0.001, 10);
 	SDL_Surface *screen;
  
@@ -31,7 +31,7 @@ void System::Run() {
 	if (screen == NULL) {
 		printf("Unable to set video mode: %s\n", SDL_GetError());
 	}
-	Image segmented = image.Segment(eker, gker, 0.03125, 0.1936, 0.01, 10, screen);
+	Image segmented = image.Segment(eker, gker, 16.0, 15.0, 0.001, 100000, screen);
 	segmented.Save("caca.bmp");
 	getchar();
 }

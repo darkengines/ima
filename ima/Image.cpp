@@ -27,9 +27,6 @@ Image::Image(const char* src) {
 		length =w * h;
 		size = length * bytesPerPixel;
 		buffer = (Real*)malloc(sizeof(Real)*size);
-		Real factor = pow(2.0, 8)-1;
-		Real xFactor = w - 1;
-		Real yFactor = h - 1;
 		if (bytesPerPixel == 5) {
 			unsigned long i = length;
 			rgb pixel;
@@ -44,11 +41,11 @@ Image::Image(const char* src) {
 					pixel.r = pixel.b;
 					pixel.b = temp;
 				}
-				buffer[index] = (i % w) / xFactor;
-				buffer[index+1] = floor((Real)(i / h)) / yFactor;
-				buffer[index+2] = pixel.r / factor;
-				buffer[index+3] = pixel.g / factor;
-				buffer[index+4] = pixel.b / factor;
+				buffer[index] = (i % w);
+				buffer[index+1] = floor((Real)(i / h));
+				buffer[index+2] = pixel.r;
+				buffer[index+3] = pixel.g;
+				buffer[index+4] = pixel.b;
 			}
 		}
 		SDL_UnlockSurface(surface);
@@ -72,13 +69,12 @@ void Image::Save(const char* name) {
 	unsigned long i = length;
 	SDL_LockSurface(surface);
 	unsigned char* pixels = (unsigned char*)surface->pixels;
-	Real factor = pow(2.0, 8)-1;
 	while (i--) {
 		int surfaceIndex = i*(bytesPerPixel-2);
 		int index = i*bytesPerPixel+2;
-		pixels[surfaceIndex] = buffer[index]*factor;
-		pixels[surfaceIndex+1] = buffer[index+1]*factor;
-		pixels[surfaceIndex+2] = buffer[index+2]*factor;
+		pixels[surfaceIndex] = buffer[index];
+		pixels[surfaceIndex+1] = buffer[index+1];
+		pixels[surfaceIndex+2] = buffer[index+2];
 	}
 	SDL_UnlockSurface(surface);
 	SDL_SaveBMP(surface, name);
@@ -86,38 +82,37 @@ void Image::Save(const char* name) {
 }
 void Image::GetXyrgb(Real* dest, unsigned long index) {
 	unsigned long n = index+1;
-	dest[0] = (w - n % w)/(Real)w;
-	dest[1] = (n / w)/(Real)h;
+	dest[0] = (w - n % w);
+	dest[1] = (n / w);
 	index = index * bytesPerPixel;
 	int i = bytesPerPixel;
 	while (i--) {
 		dest[i+2] = buffer[index+i];
 	}
 }
-void Image::meanShiftProcess(Real* dest, Real* src, MeanShiftKernel& skernel, MeanShiftKernel& ckernel, Real spatialTolerance, Real colorTolerance, Real* tmpBuffer, int bufferSize) {
+void Image::meanShiftProcess(Real* dest, Real* src, MeanShiftKernel& skernel, MeanShiftKernel& ckernel, Real spatialTolerance, Real colorTolerance, Real* tmpBuffer, int bufferSize, Real* frame, int frameLength) {
 	
 	Real* xi = 0;
 	Real sg, cg, g, ssum;
 	ssum = 0;
 
-	
 
 	memset(dest, 0, bufferSize);
 
-	int i = length;
+	int i = frameLength;
 	while (i--) {
-		sub(src, buffer+i*bytesPerPixel, tmpBuffer, bytesPerPixel);
+		sub(src, frame+i*bytesPerPixel, tmpBuffer, bytesPerPixel);
 		sg = skernel.Compute(tmpBuffer, 2, spatialTolerance); //Optimize with cache
 		if (sg) {
 			cg = ckernel.Compute(tmpBuffer+2, bytesPerPixel-2, colorTolerance); //Optimize with cache
 			g = -sg*cg;
-			addScaled(dest, buffer+i*bytesPerPixel, dest, g, bytesPerPixel);
+			addScaled(dest, frame+i*bytesPerPixel, dest, g, bytesPerPixel);
 			ssum += g;
 		}		
 	}
 	mul(dest, (1.0/ssum), dest, bytesPerPixel);
 }
-void Image::MeanShift(Real* dest, Real* src, MeanShiftKernel& skernel, MeanShiftKernel& ckernel, Real spatialTolerance, Real colorTolerance, Real accuracy, unsigned long maxPasses, Real* tmpBuffer) {
+void Image::MeanShift(Real* dest, Real* src, MeanShiftKernel& skernel, MeanShiftKernel& ckernel, Real spatialTolerance, Real colorTolerance, Real accuracy, unsigned long maxPasses, Real* tmpBuffer, Real* frame, int frameLength) {
 	accuracy = accuracy * accuracy;
 	
 	Real* x = tmpBuffer;
@@ -128,7 +123,7 @@ void Image::MeanShift(Real* dest, Real* src, MeanShiftKernel& skernel, MeanShift
 	memcpy(x, src, bytesPerPixel*sizeof(Real));
 	do {
 		memcpy(dest, x, bytesPerPixel*sizeof(Real));
-		meanShiftProcess(x, dest, skernel, ckernel, spatialTolerance, colorTolerance, tempBuffer, sizeof(Real)*bytesPerPixel);
+		meanShiftProcess(x, dest, skernel, ckernel, spatialTolerance, colorTolerance, tempBuffer, sizeof(Real)*bytesPerPixel, frame, frameLength);
 		sub(dest, x, temp, bytesPerPixel);
 		m = squaredMagnitude(temp, bytesPerPixel);
 		k++;
@@ -153,7 +148,31 @@ Image& Image::FixNoise(MeanShiftKernel& skernel, MeanShiftKernel& ckernel,Real s
 		
 		SDL_Flip(screen);
 
-		MeanShift(temp, buffer+index, skernel, ckernel, spatialTolerance, colorTolerance, accuracy, maxPasses, tmpBuffer);
+		Real f = skernel.getFrameSize(spatialTolerance);
+		Real x1 = buffer[index] - f;
+		Real y1 = buffer[index + 1] - f;
+		Real x2 = buffer[index] + f;
+		Real y2 = buffer[index + 1] + f;
+		if (x1 < 0) x1 = 0;
+		if (y1 < 0) y1 = 0;
+		if (x2 > w-1) x2 = w-1;
+		if (y2 > h-1) y2 = h-1;
+		int fs = (x2 - x1) * (y2 - y1) + 1;
+		Real* frame = (Real*)malloc(sizeof(Real)*fs*5);
+		int x,y,k;
+		k = 0;
+		y = y2 - y1;
+		while (y--) {
+			x = x2 - x1;
+			while (x--) {
+				int z = y*bytesPerPixel*w+x*bytesPerPixel;
+				memcpy(frame+k*bytesPerPixel,buffer+z,bytesPerPixel*sizeof(Real));
+				k++;
+			}
+		}
+		
+		MeanShift(temp, buffer+index, skernel, ckernel, spatialTolerance, colorTolerance, accuracy, maxPasses, tmpBuffer, frame, fs);
+		free(frame);
 		memcpy(image.buffer+index, temp, (bytesPerPixel)*sizeof(Real));
 		
 		surface = image.GetSurface();
@@ -178,13 +197,12 @@ SDL_Surface* Image::GetSurface() {
 	unsigned long i = length;
 	SDL_LockSurface(surface);
 	unsigned char* pixels = (unsigned char*)surface->pixels;
-	Real factor = pow(2.0, 8)-1;
 	while (i--) {
 		int surfaceIndex = i*(bytesPerPixel-2);
 		int index = i*bytesPerPixel+2;
-		pixels[surfaceIndex] = buffer[index]*factor;
-		pixels[surfaceIndex+1] = buffer[index+1]*factor;
-		pixels[surfaceIndex+2] = buffer[index+2]*factor;
+		pixels[surfaceIndex] = buffer[index];
+		pixels[surfaceIndex+1] = buffer[index+1];
+		pixels[surfaceIndex+2] = buffer[index+2];
 	}
 	SDL_UnlockSurface(surface);
 
@@ -192,7 +210,7 @@ SDL_Surface* Image::GetSurface() {
 }
 
 Image& Image::Segment(MeanShiftKernel& skernel, MeanShiftKernel& ckernel,Real spatialTolerance, Real colorTolerance, Real accuracy, unsigned long maxPasses, SDL_Surface* screen) {
-	Image noiseFix = *this;//FixNoise(skernel, ckernel, spatialTolerance, colorTolerance, accuracy, maxPasses, screen);
+	Image noiseFix = FixNoise(skernel, ckernel, spatialTolerance, colorTolerance, accuracy, maxPasses, screen);
 	Image& S(*this);
 	GHashTable* hash = g_hash_table_new(g_str_hash, g_str_equal);
 	Real squaredSpatialTolerance = spatialTolerance*spatialTolerance;
@@ -214,9 +232,9 @@ Image& Image::Segment(MeanShiftKernel& skernel, MeanShiftKernel& ckernel,Real sp
 	//Compute histogram
 	while (index--) {
 		pixelIndex = index*bytesPerPixel+2;
-		rgb[0] = floor(noiseFix.buffer[pixelIndex]*255.0);
-		rgb[1] = floor(noiseFix.buffer[pixelIndex+1]*255.0);
-		rgb[2] = floor(noiseFix.buffer[pixelIndex+2]*255.0);
+		rgb[0] = floor(noiseFix.buffer[pixelIndex]);
+		rgb[1] = floor(noiseFix.buffer[pixelIndex+1]);
+		rgb[2] = floor(noiseFix.buffer[pixelIndex+2]);
 		if (!g_hash_table_lookup_extended(hash, rgb, (gpointer*)&cpy, (gpointer*)&sum)) {
 			sum = (long*)malloc(sizeof(long));
 			*sum = 1;
@@ -242,15 +260,15 @@ Image& Image::Segment(MeanShiftKernel& skernel, MeanShiftKernel& ckernel,Real sp
 			pixelIndex2 = index2*bytesPerPixel;
 			sub(noiseFix.buffer+pixelIndex, noiseFix.buffer+pixelIndex2, temp, bytesPerPixel);
 			if (squaredMagnitude(temp, 2) < squaredSpatialTolerance && squaredMagnitude(temp+2, bytesPerPixel-2) < squaredcolorTolerance) {
-				rgb[0] = floor(noiseFix.buffer[pixelIndex+2]*255.0);
-				rgb[1] = floor(noiseFix.buffer[pixelIndex+3]*255.0);
-				rgb[2] = floor(noiseFix.buffer[pixelIndex+4]*255.0);
+				rgb[0] = floor(noiseFix.buffer[pixelIndex+2]);
+				rgb[1] = floor(noiseFix.buffer[pixelIndex+3]);
+				rgb[2] = floor(noiseFix.buffer[pixelIndex+4]);
 
 				bool t = g_hash_table_lookup_extended(hash, rgb, (gpointer*)&cpy, (gpointer*)&hp);
 
-				rgb[0] = floor(noiseFix.buffer[pixelIndex2+2]*255.0);
-				rgb[1] = floor(noiseFix.buffer[pixelIndex2+3]*255.0);
-				rgb[2] = floor(noiseFix.buffer[pixelIndex2+4]*255.0);
+				rgb[0] = floor(noiseFix.buffer[pixelIndex2+2]);
+				rgb[1] = floor(noiseFix.buffer[pixelIndex2+3]);
+				rgb[2] = floor(noiseFix.buffer[pixelIndex2+4]);
 
 				g_hash_table_lookup_extended(hash, rgb, (gpointer*)&cpy, (gpointer*)&hq);
 

@@ -26,13 +26,13 @@ public:
 	int bytesPerPixel;
 	void Save(const char*);
 	void GetXyrgb(Real* dest, unsigned long index);
-	void MeanShift(Real* dest, Real* src, MeanShiftKernel& skernel, MeanShiftKernel& ckernel, Real spatialTolerance, Real colorTolerance, Real accuracy, unsigned long maxPasses, Real*);
+	void MeanShift(Real* dest, Real* src, MeanShiftKernel& skernel, MeanShiftKernel& ckernel, Real spatialTolerance, Real colorTolerance, Real accuracy, unsigned long maxPasses, Real*, Real*, int);
 	Image& FixNoise(MeanShiftKernel& skernel, MeanShiftKernel& ckernel,Real spatialTolerance, Real colorTolerance, Real accuracy, unsigned long maxPasses, SDL_Surface*);
 	void setPixel(Real* pixel, unsigned long index);
 	SDL_Surface* GetSurface();
 	Image& Segment(MeanShiftKernel& skernel, MeanShiftKernel& ckernel,Real spatialTolerance, Real colorTolerance, Real accuracy, unsigned long maxPasses, SDL_Surface*);
 private:
-	void meanShiftProcess(Real* dest,Real* src, MeanShiftKernel& gkernel, MeanShiftKernel& ckernel, Real spatialTolerance, Real colorTolerance, Real*, int);
+	void meanShiftProcess(Real* dest,Real* src, MeanShiftKernel& gkernel, MeanShiftKernel& ckernel, Real spatialTolerance, Real colorTolerance, Real*, int, Real*, int);
 };
 
 #endif

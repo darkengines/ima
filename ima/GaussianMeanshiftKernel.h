@@ -9,8 +9,9 @@
 class GaussianMeanShiftKernel: public MeanShiftKernel {
 	
 public:
-	GaussianMeanShiftKernel(int mode, int cacheSize);
+	GaussianMeanShiftKernel();
 	Real _compute(Real*,int, Real) const;
+	Real getFrameSize(Real tolerance);
 };
 
 #endif

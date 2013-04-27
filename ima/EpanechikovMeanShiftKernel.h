@@ -9,6 +9,7 @@ class EpanechikovMeanShiftKernel: public MeanShiftKernel {
 public:
 	EpanechikovMeanShiftKernel(int mode, int cacheSize);
 	Real _compute(Real*,int, Real) const;
+	Real getFrameSize(Real tolerance);
 };
 
 #endif

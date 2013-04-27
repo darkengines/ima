@@ -1,7 +1,7 @@
 #include "GaussianMeanShiftKernel.h"
 
 
-GaussianMeanShiftKernel::GaussianMeanShiftKernel(int mode, int cacheSize): MeanShiftKernel(mode, cacheSize) {
+GaussianMeanShiftKernel::GaussianMeanShiftKernel() {
 }
 
 Real GaussianMeanShiftKernel::_compute(Real* componants, int length, Real tolerance) const {
@@ -12,4 +12,7 @@ Real GaussianMeanShiftKernel::_compute(Real* componants, int length, Real tolera
 	Real m = -(exp(-squaredMagnitude(temp, length)/2))/(2*tolerance);
 	free(temp);
 	return m;
+}
+Real GaussianMeanShiftKernel::getFrameSize(Real tolerance) {
+	return 3*tolerance;
 }
